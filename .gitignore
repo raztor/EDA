@@ -1,0 +1,9 @@
+/.idea/
+/cmake-build-debug/
+/cmake-build-release/
+*.iml
+*.ipr
+*.iws
+*.swp
+*.swo
+*.swn
