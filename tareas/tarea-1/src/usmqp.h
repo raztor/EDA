@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "ll_Wzzp.h"
 
 typedef struct user {
     char *telefono; // string : teléfono movil del usuario

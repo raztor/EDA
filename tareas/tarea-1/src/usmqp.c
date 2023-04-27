@@ -6,15 +6,14 @@
 
 struct WazaaaApp;
 
-mensaje *parse_message(char *text) {
+struct WazaaaApp parse_message(char *text) {
     char name[50], cellphone[15];
-    mensaje *msg = malloc(sizeof(mensaje));
+    mensaje msg;
     sscanf(text, "[%10[^]] %8[^]]] %[^\n] %[+0-9 ]:%[^\n]",
-           msg->fecha, msg->hora, name, cellphone, msg->contenido);
-    msg->emisor = malloc(sizeof(contacto));
-    sscanf(name, "%s", msg->emisor->nombre);
-    sscanf(cellphone, "+%[0-9 ]", msg->emisor->telefono);
-    msg->sgte = NULL;
+           msg.fecha, msg.hora, name, cellphone, msg.contenido);
+    sscanf(name, "%s", msg.emisor->nombre);
+    sscanf(cellphone, "+%[0-9 ]", msg.emisor->telefono);
+    msg.sgte = NULL;
     return msg;
 }
 
@@ -29,55 +28,39 @@ void read_file(char filename[31], mensaje **HEAD) {
         exit(1);
     }
     while (fgets(buffer, sizeof(buffer), archivo) != NULL) {
-        mensaje *msg = parse_message(buffer);
-        if (*HEAD == NULL) {
-            *HEAD = msg;
-        } else {
-            mensaje *temp = *HEAD;
-            while (temp->sgte != NULL) {
-                temp = temp->sgte;
-            }
-            temp->sgte = msg;
+        mensaje temp_lector = parse_message(buffer);
+
+        mensaje *nuevo = malloc(sizeof(mensaje));
+        nuevo->emisor = temp_lector.emisor;
+        nuevo->hora = temp_lector.hora;
+        nuevo->fecha = temp_lector.fecha;
+        nuevo->contenido = temp_lector.contenido;
+
+        mensaje *recorredor = HEAD;
+        while(recorredor->sgte!=NULL){
+            recorredor=recorredor->sgte;
         }
+
+        nuevo->sgte = recorredor->sgte;
+        recorredor->sgte = nuevo;
     }
-    fclose(archivo);
 }
 
 
 int main(int argc, char *argv[]) {
     char filename[16];
-    mensaje *HEAD = NULL;
+    mensaje *inicio = malloc(sizeof(mensaje));
+    inicio->sgte=NULL;
     if (argc != 2) {
         printf("Error: debe ingresar el nombre del archivo de entrada.\n");
         exit(1);
     }
     strcpy(filename, argv[1]);
-    read_file(filename, &HEAD);
+    read_file(filename, &inicio);
 
-    // test print
-    mensaje *temp = HEAD;
-    while (temp != NULL) {
-        printf("Date: %s\n", temp->fecha);
-        printf("Time: %s\n", temp->hora);
-        printf("Name: %s\n", temp->emisor->nombre);
-        printf("Cellphone: %s\n", temp->emisor->telefono);
-        printf("Message: %s\n", temp->contenido);
-        printf("\n");
-        temp = temp->sgte;
-    }
 
-    // free memory
-    temp = HEAD;
-    while (temp != NULL) {
-        mensaje *sig = temp->sgte;
-        free(temp->fecha);
-        free(temp->hora);
-        free(temp->emisor->nombre);
-        free(temp->emisor->telefono);
-        free(temp->emisor);
-        free(temp->contenido);
-        free(temp);
-        temp = sig;
-    }
+
+
+
     return 0;
 }
