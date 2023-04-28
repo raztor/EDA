@@ -7,12 +7,15 @@
 struct WazaaaApp;
 
 struct WazaaaApp parse_message(char *text) {
-    char name[50], cellphone[15];
+    char date[11], time[10], name[50], phone[15], message[100];
     mensaje msg;
-    sscanf(text, "[%10[^]] %8[^]]] %[^\n] %[+0-9 ]:%[^\n]",
-           msg.fecha, msg.hora, name, cellphone, msg.contenido);
-    sscanf(name, "%s", msg.emisor->nombre);
-    sscanf(cellphone, "+%[0-9 ]", msg.emisor->telefono);
+
+    sscanf(text,"[%[^]]] %[^ ] %[^+]+%[^:]: %[^\n]", date, time, name, phone, message);
+    msg.fecha = date;
+    msg.hora = time;
+    msg.emisor->nombre = name;
+    msg.emisor->telefono = phone;
+    msg.contenido = message;
     msg.sgte = NULL;
     return msg;
 }
@@ -28,6 +31,12 @@ void read_file(char filename[31], mensaje **HEAD) {
         exit(1);
     }
     while (fgets(buffer, sizeof(buffer), archivo) != NULL) {
+        char date[11], time[10], name[50], phone[15], message[100];
+        sscanf(buffer,"[%[^]]] %[^ ] %[^+]+%[^:]: %[^\n]", date, time, name, phone, message);
+             
+
+
+
         mensaje temp_lector = parse_message(buffer);
 
         mensaje *nuevo = malloc(sizeof(mensaje));
@@ -46,6 +55,16 @@ void read_file(char filename[31], mensaje **HEAD) {
     }
 }
 
+void print_list(mensaje *cabeza){
+    mensaje *recorredor = cabeza;
+    // Recorre todos los nodos hasta encontrar el NULL
+    while(recorredor != NULL){
+        printf("%s ", recorredor->contenido);
+        recorredor = recorredor->sgte;
+    }
+    printf("\n");
+}
+
 
 int main(int argc, char *argv[]) {
     char filename[16];
@@ -58,9 +77,7 @@ int main(int argc, char *argv[]) {
     strcpy(filename, argv[1]);
     read_file(filename, &inicio);
 
-
-
-
+    print_list(inicio);
 
     return 0;
 }
